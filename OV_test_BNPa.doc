@@ -1,0 +1,32 @@
+{\rtf1\fs24
+\trowd\trgaph75\trleft-75\intbl\trqc\clbrdrt\brdrs\cellx2160\clbrdrt\brdrs\cellx3744
+\ql \cell\qc (1)\cell\row
+\trowd\trgaph75\trleft-75\trqc\cellx2160\cellx3744
+\trowd\trgaph75\trleft-75\trqc\clbrdrb\brdrs\cellx2160\clbrdrb\brdrs\cellx3744
+\ql VARIABLES\cell\qc OV_test\cell\row
+\trowd\trgaph75\trleft-75\trqc\cellx2160\cellx3744
+\ql \cell\qc \cell\row
+\ql COLd\cell\qc -6.930***\cell\row
+\ql \cell\qc (1.898)\cell\row
+\ql index\cell\qc -0.0764***\cell\row
+\ql \cell\qc (0.0145)\cell\row
+\ql c.COLd#c.index\cell\qc 0.123***\cell\row
+\ql \cell\qc (0.0344)\cell\row
+\ql POP_g\cell\qc -0.528***\cell\row
+\ql \cell\qc (0.0641)\cell\row
+\ql asinh_FDIi\cell\qc 0.360***\cell\row
+\ql \cell\qc (0.0934)\cell\row
+\ql asinh_ICP\cell\qc 0.149*\cell\row
+\ql \cell\qc (0.0898)\cell\row
+\ql Constant\cell\qc 6.535***\cell\row
+\ql \cell\qc (0.927)\cell\row
+\ql \cell\qc \cell\row
+\ql Observations\cell\qc 1,848\cell\row
+\ql R-squared\cell\qc 0.060\cell\row
+\ql F-statistic\cell\qc 1.895\cell\row
+\trowd\trgaph75\trleft-75\trqc\trbrdrb\brdrs\clbrdrb\brdrs\cellx2160\clbrdrb\brdrs\cellx3744
+\ql p-value\cell\qc 0.128\cell\row
+\pard\qc
+Standard errors in parentheses\par
+*** p<0.01, ** p<0.05, * p<0.1\par
+}

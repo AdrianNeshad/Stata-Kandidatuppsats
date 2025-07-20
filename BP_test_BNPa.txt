@@ -1,0 +1,24 @@
+		(1)
+VARIABLES	LABELS	BP_test
+		
+COLd	COLd	-6.930***
+		(1.898)
+index	index	-0.0764***
+		(0.0145)
+c.COLd#c.index		0.123***
+		(0.0344)
+POP_g	POP_g	-0.528***
+		(0.0641)
+asinh_FDIi	asinh_FDIi	0.360***
+		(0.0934)
+asinh_ICP	asinh_ICP	0.149*
+		(0.0898)
+Constant	Constant	6.535***
+		(0.927)
+		
+Observations		1,848
+R-squared		0.060
+Chi2		24.63
+p-value		6.94e-07
+Standard errors in parentheses		
+*** p<0.01, ** p<0.05, * p<0.1		
