@@ -96,21 +96,127 @@ reg `depvarA' COLd index COLd_index `contvars', vce(cluster country_id)
 test COLd_index = 0
 
 
-
 *** β‑konvergens – testar om fattigare länder växer snabbare än rikare ****
+* Spara ursprungliga data
+preserve
 
-* 1) Skapa laggad log‑BNP om inte redan
-gen L_ln_GDP_pc = L.ln_GDP_pc
+* Skapa tidsperioder (5-årsperioder för stabilitet)
+gen period = floor((year-1995)/5) + 1
+label define period_lbl 1 "1995-1999" 2 "2000-2004" 3 "2005-2009" ///
+    4 "2010-2014" 5 "2015-2019" 6 "2020-2024"
+label values period period_lbl
 
-* 2) Konvergens för alla länder (skapar filen)
-asdoc regress GDP_g_pc L_ln_GDP_pc POP_g asinh_FDIi asinh_ICP, save(Convergence.doc) replace title(Alla)
+* Kollapsa data till genomsnitt per period och land
+collapse (mean) avg_growth = GDP_g_pc ///
+         (first) initial_ln_GDP = ln_GDP_pc ///
+         (mean) avg_POP_g = POP_g ///
+         (mean) avg_asinh_FDIi = asinh_FDIi ///
+         (mean) avg_asinh_ICP = asinh_ICP ///
+         (first) COLd = COLd ///
+         (first) ISO3 = ISO3, ///
+         by(country_id period)
 
-* 3) Konvergens per grupp (lägger till i samma fil)
-* För tidigare brittiska kolonier (COLd==0)
-asdoc regress GDP_g_pc L_ln_GDP_pc POP_g asinh_FDIi asinh_ICP if COLd==0, save(Convergence.doc) append title(COLd0)
+* Ta bort observationer med missing värden
+drop if missing(avg_growth, initial_ln_GDP)
 
-* För tidigare franska kolonier (COLd==1)
-asdoc regress GDP_g_pc L_ln_GDP_pc POP_g asinh_FDIi asinh_ICP if COLd==1, save(Convergence.doc) append title(COLd1)
+* ALTERNATIV 1: Grundläggande absolut konvergens (endast initial BNP)
+asdoc regress avg_growth initial_ln_GDP, ///
+    save(Convergence_Correct.doc) replace title(Absolut_Konvergens_Alla) ///
+    label
 
-* 4) Tolkning: ett negativt och signifikant β‑värde (koefficient på L_ln_GDP_pc) indikerar konvergens. 
-*    Jämför β för COLd=0 och COLd=1 för att se om en grupp konvergerar snabbare än den andra.
+* ALTERNATIV 2: Villkorlig konvergens med kontrollvariabler
+asdoc regress avg_growth initial_ln_GDP avg_POP_g avg_asinh_FDIi avg_asinh_ICP, ///
+    save(Convergence_Correct.doc) append title(Villkorlig_Konvergens_Alla) ///
+    label
+
+* ALTERNATIV 3: Konvergens för olika grupper (brittiska vs franska kolonier)
+asdoc regress avg_growth initial_ln_GDP avg_POP_g avg_asinh_FDIi avg_asinh_ICP ///
+    if COLd==0, ///
+    save(Convergence_Correct.doc) append title(Villkorlig_Konvergens_Brittiska) ///
+    label
+
+asdoc regress avg_growth initial_ln_GDP avg_POP_g avg_asinh_FDIi avg_asinh_ICP ///
+    if COLd==1, ///
+    save(Convergence_Correct.doc) append title(Villkorlig_Konvergens_Franska) ///
+    label
+
+* ALTERNATIV 4: Testa om konvergenshastigheten skiljer sig mellan grupper
+gen COLd_initial = COLd * initial_ln_GDP
+asdoc regress avg_growth initial_ln_GDP COLd COLd_initial avg_POP_g avg_asinh_FDIi avg_asinh_ICP, ///
+    save(Convergence_Correct.doc) append title(Konvergens_Gruppinteraktion) ///
+    label
+
+* Test av signifikant skillnad i konvergenshastighet
+test COLd_initial = 0
+
+* Beräkna konvergenshastighet (lambda) om koefficienten är negativ
+* lambda = -ln(1 + β*T)/T, där T är antal år per period (5 år)
+* Half-life = ln(2)/lambda
+display "Om beta-koefficienten är negativ, beräkna konvergenshastighet:"
+display "lambda = -ln(1 + beta*5)/5"
+display "Half-life = ln(2)/lambda"
+
+* Återställ ursprungliga data
+restore
+
+*** TOLKNING ***
+* Negativt och signifikant β (koefficient på initial_ln_GDP) = konvergens
+* Ju mer negativt β, desto snabbare konvergens
+* Jämför β mellan COLd=0 och COLd=1 för att se skillnader
+* COLd_initial-koefficienten testar om konvergenshastigheten skiljer sig signifikant
+
+
+***Grafer
+***ln_GDP_pc
+preserve
+collapse (mean) ln_GDP_pc, by(year COLd)
+twoway (line ln_GDP_pc year if COLd == 0, lcolor(blue)) (line ln_GDP_pc year if COLd == 1, lcolor(red)), legend(label(1 "Brittisk koloni") label(2 "Fransk koloni")) title("") ytitle("Log BNP per capita") xtitle("År") name(graph_ln_GDP_pc_time, replace)
+graph export "ln_GDP_pc_over_time_by_COLd.png", replace
+restore
+
+**GDP_pc
+preserve
+collapse (mean) GDP_pc, by(year COLd)
+twoway (line GDP_pc year if COLd == 0, lcolor(blue)) (line GDP_pc year if COLd == 1, lcolor(red)), legend(label(1 "Brittisk koloni") label(2 "Fransk koloni")) title("") ytitle("BNP per capita") xtitle("År") name(graph_GDP_pc_time, replace)
+graph export "GDP_pc_over_time_by_COLd.png", replace
+restore
+
+** GDP_g_pc_over_time
+preserve
+collapse (mean) GDP_g_pc, by(year COLd)
+twoway (line GDP_g_pc year if COLd == 0, lcolor(blue)) ///
+       (line GDP_g_pc year if COLd == 1, lcolor(red)), ///
+       legend(label(1 "Brittisk koloni") label(2 "Fransk koloni")) ///
+       title("") ytitle("BNP tillväxt per cap.") xtitle("År") ///
+       name(graph_BNPb_time, replace)
+
+graph export "GDP_g_pc_over_time_by_COLd.png", replace
+restore
+
+*** Graf för koloni och investeringar
+preserve
+collapse (mean) asinh_FDIi, by(year COLd)
+twoway ///
+  (line asinh_FDIi year if COLd == 0, lcolor(blue)) ///
+  (line asinh_FDIi year if COLd == 1, lcolor(red)), ///
+  legend(label(1 "Brittisk koloni") label(2 "Fransk koloni")) ///
+  title("Genomsnittlig Foreign Invest. över tid") ///
+  ytitle("asinh(Foreign Invest.)") xtitle("År") ///
+  name(graph_FDIi_time, replace)
+graph export "FDIi_by_Colony.png", replace
+restore
+
+
+preserve
+collapse (mean) GDP_g_pc asinh_FDIi, by(year)
+twoway ///
+    (line GDP_g_pc year, lcolor(blue) lpattern(solid) yaxis(1)) ///
+    (line asinh_FDIi year, lcolor(red) lpattern(dash) yaxis(2)), ///
+    legend(label(1 "BNP-tillväxt per cap.") label(2 "asinh(FDI inflows)")) ///
+    title("BNP-Tillväxt per cap. och Foreign Invest. över tid") ///
+    xtitle("År") ///
+    ytitle("ΔBNP  per cap.", axis(1)) ///
+    ytitle("asinh(FDIi)", axis(2)) ///
+    name(graph_GDP_g_pc_FDI_time, replace)
+graph export "GDP_g_pc_FDI_over_time.png", replace
+restore
