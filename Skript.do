@@ -109,6 +109,7 @@ label values period period_lbl
 * Kollapsa data till genomsnitt per period och land
 collapse (mean) avg_growth = GDP_g_pc ///
          (first) initial_ln_GDP = ln_GDP_pc ///
+		 (mean) avg_index = index ///
          (mean) avg_POP_g = POP_g ///
          (mean) avg_asinh_FDIi = asinh_FDIi ///
          (mean) avg_asinh_ICP = asinh_ICP ///
@@ -121,29 +122,29 @@ drop if missing(avg_growth, initial_ln_GDP)
 
 * ALTERNATIV 1: Grundläggande absolut konvergens (endast initial BNP)
 asdoc regress avg_growth initial_ln_GDP, ///
-    save(Convergence_Correct.doc) replace title(Absolut_Konvergens_Alla) ///
+    save(Convergence.doc) replace title(Absolut_Konvergens_Alla) ///
     label
 
 * ALTERNATIV 2: Villkorlig konvergens med kontrollvariabler
-asdoc regress avg_growth initial_ln_GDP avg_POP_g avg_asinh_FDIi avg_asinh_ICP, ///
-    save(Convergence_Correct.doc) append title(Villkorlig_Konvergens_Alla) ///
+asdoc regress avg_growth initial_ln_GDP avg_index avg_POP_g avg_asinh_FDIi avg_asinh_ICP, ///
+    save(Convergence.doc) append title(Villkorlig_Konvergens_Alla) ///
     label
 
 * ALTERNATIV 3: Konvergens för olika grupper (brittiska vs franska kolonier)
-asdoc regress avg_growth initial_ln_GDP avg_POP_g avg_asinh_FDIi avg_asinh_ICP ///
+asdoc regress avg_growth initial_ln_GDP avg_index avg_POP_g avg_asinh_FDIi avg_asinh_ICP ///
     if COLd==0, ///
-    save(Convergence_Correct.doc) append title(Villkorlig_Konvergens_Brittiska) ///
+    save(Convergence.doc) append title(Villkorlig_Konvergens_Brittiska) ///
     label
 
-asdoc regress avg_growth initial_ln_GDP avg_POP_g avg_asinh_FDIi avg_asinh_ICP ///
+asdoc regress avg_growth initial_ln_GDP avg_index avg_POP_g avg_asinh_FDIi avg_asinh_ICP ///
     if COLd==1, ///
-    save(Convergence_Correct.doc) append title(Villkorlig_Konvergens_Franska) ///
+    save(Convergence.doc) append title(Villkorlig_Konvergens_Franska) ///
     label
 
 * ALTERNATIV 4: Testa om konvergenshastigheten skiljer sig mellan grupper
 gen COLd_initial = COLd * initial_ln_GDP
-asdoc regress avg_growth initial_ln_GDP COLd COLd_initial avg_POP_g avg_asinh_FDIi avg_asinh_ICP, ///
-    save(Convergence_Correct.doc) append title(Konvergens_Gruppinteraktion) ///
+asdoc regress avg_growth initial_ln_GDP COLd COLd_initial avg_index avg_POP_g avg_asinh_FDIi avg_asinh_ICP, ///
+    save(Convergence.doc) append title(Konvergens_Gruppinteraktion) ///
     label
 
 * Test av signifikant skillnad i konvergenshastighet
